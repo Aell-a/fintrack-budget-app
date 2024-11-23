@@ -7,7 +7,7 @@ export default function Home() {
       <p className="mb-4 text-xl">Start managing your finances today!</p>
       <Link
         href="/dashboard"
-        className="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg hover:bg-blue-600 transition-colors"
+        className="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg hover:bg-blue-600 transition-colors dark:bg-blue-600 dark:hover:bg-blue-700"
       >
         Go to Dashboard
       </Link>

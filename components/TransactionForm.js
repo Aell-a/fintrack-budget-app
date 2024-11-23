@@ -2,6 +2,24 @@
 
 import { useState } from "react";
 import { useBudget } from "../contexts/BudgetContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 
 export function TransactionForm({ onClose }) {
   const { addTransaction, categories } = useBudget();
@@ -10,6 +28,7 @@ export function TransactionForm({ onClose }) {
     amount: "",
     type: "expense",
     category: categories[0],
+    date: new Date(),
   });
 
   const handleSubmit = (e) => {
@@ -17,6 +36,7 @@ export function TransactionForm({ onClose }) {
     addTransaction({
       ...newTransaction,
       amount: parseFloat(newTransaction.amount),
+      date: format(newTransaction.date, "yyyy-MM-dd"),
     });
     onClose();
   };
@@ -24,14 +44,8 @@ export function TransactionForm({ onClose }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label
-          htmlFor="description"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Description
-        </label>
-        <input
-          type="text"
+        <Label htmlFor="description">Description</Label>
+        <Input
           id="description"
           value={newTransaction.description}
           onChange={(e) =>
@@ -40,75 +54,96 @@ export function TransactionForm({ onClose }) {
               description: e.target.value,
             })
           }
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           required
         />
       </div>
       <div>
-        <label
-          htmlFor="amount"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Amount
-        </label>
-        <input
-          type="number"
+        <Label htmlFor="amount">Amount</Label>
+        <Input
           id="amount"
+          type="number"
           value={newTransaction.amount}
           onChange={(e) =>
             setNewTransaction({ ...newTransaction, amount: e.target.value })
           }
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           required
         />
       </div>
       <div>
-        <label
-          htmlFor="type"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Type
-        </label>
-        <select
-          id="type"
+        <Label htmlFor="type">Type</Label>
+        <Select
           value={newTransaction.type}
-          onChange={(e) =>
-            setNewTransaction({ ...newTransaction, type: e.target.value })
+          onValueChange={(value) =>
+            setNewTransaction({ ...newTransaction, type: value })
           }
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
         >
-          <option value="expense">Expense</option>
-          <option value="income">Income</option>
-        </select>
+          <SelectTrigger>
+            <SelectValue placeholder="Select type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="expense">Expense</SelectItem>
+            <SelectItem value="income">Income</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
+      {newTransaction.type === "expense" && (
+        <div>
+          <Label htmlFor="category">Category</Label>
+          <Select
+            value={newTransaction.category}
+            onValueChange={(value) =>
+              setNewTransaction({ ...newTransaction, category: value })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       <div>
-        <label
-          htmlFor="category"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Category
-        </label>
-        <select
-          id="category"
-          value={newTransaction.category}
-          onChange={(e) =>
-            setNewTransaction({ ...newTransaction, category: e.target.value })
-          }
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-        >
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
+        <Label htmlFor="date">Date</Label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant={"outline"}
+              className={`w-full justify-start text-left font-normal ${
+                !newTransaction.date && "text-muted-foreground"
+              }`}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {newTransaction.date ? (
+                format(newTransaction.date, "PPP")
+              ) : (
+                <span>Pick a date</span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={newTransaction.date}
+              onSelect={(date) =>
+                setNewTransaction({
+                  ...newTransaction,
+                  date: date || new Date(),
+                })
+              }
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       </div>
-      <button
-        type="submit"
-        className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-      >
+      <Button type="submit" className="w-full">
         Add Transaction
-      </button>
+      </Button>
     </form>
   );
 }
